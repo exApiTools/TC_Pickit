@@ -667,9 +667,7 @@ namespace PickIt
         private IEnumerator FindItemToPick()
         {
             if (!GameController.Window.IsForeground()) yield break;
-            var window = GameController.Window.GetWindowRectangleTimeCache;
-            var rect = new RectangleF(window.X, window.X, window.X + window.Width, window.Y + window.Height);
-            var playerPos = GameController.Player.GridPos;
+            var windowRect = GameController.Window.GetWindowRectangleTimeCache with { Location = Vector2.Zero };
 
             List<CustomItem> currentLabels;
             var morphPath = "Metadata/MiscellaneousObjects/Metamorphosis/MetamorphosisMonsterMarker";
@@ -679,7 +677,7 @@ namespace PickIt
                 currentLabels = GameController.Game.IngameState.IngameUi.ItemsOnGroundLabelsVisible
                     .Where(x => x.Address != 0 &&
                                 x.ItemOnGround?.Path != null &&
-                                x.IsVisible && x.Label.GetClientRectCache.Center.PointInRectangle(rect) &&
+                                x.IsVisible && x.Label.GetClientRectCache.Center.PointInRectangle(windowRect) &&
                                 x.CanPickUp && (x.MaxTimeForPickUp.TotalSeconds <= 0) || x.ItemOnGround?.Path == morphPath)
                     .Select(x => new CustomItem(x, GameController.Files,
                         x.ItemOnGround.DistancePlayer, _weightsRules, x.ItemOnGround?.Path == morphPath))
@@ -690,7 +688,7 @@ namespace PickIt
                 currentLabels = GameController.Game.IngameState.IngameUi.ItemsOnGroundLabelsVisible
                     .Where(x => x.Address != 0 &&
                                 x.ItemOnGround?.Path != null &&
-                                x.IsVisible && x.Label.GetClientRectCache.Center.PointInRectangle(rect) &&
+                                x.IsVisible && x.Label.GetClientRectCache.Center.PointInRectangle(windowRect) &&
                                 x.CanPickUp && (x.MaxTimeForPickUp.TotalSeconds <= 0) || x.ItemOnGround?.Path == morphPath)
                     .Select(x => new CustomItem(x, GameController.Files,
                         x.ItemOnGround.DistancePlayer, _weightsRules, x.ItemOnGround?.Path == morphPath))
@@ -698,11 +696,11 @@ namespace PickIt
             }
 
             GameController.Debug["PickIt"] = currentLabels;
-            var rectangleOfGameWindow = GameController.Window.GetWindowRectangleTimeCache;
-            rectangleOfGameWindow.Inflate(-36, -36);
+            var windowRectWithoutMargins = windowRect;
+            windowRectWithoutMargins.Inflate(-36, -36);
             var pickUpThisItem = currentLabels.FirstOrDefault(x =>
                 DoWePickThis(x) && x.Distance < Settings.PickupRange && x.GroundItem != null &&
-                rectangleOfGameWindow.Intersects(new RectangleF(x.LabelOnGround.Label.GetClientRectCache.Center.X,
+                windowRectWithoutMargins.Intersects(new RectangleF(x.LabelOnGround.Label.GetClientRectCache.Center.X,
                     x.LabelOnGround.Label.GetClientRectCache.Center.Y, 3, 3)) && Misc.CanFitInventory(x));
             
             if (Input.GetKeyState(Settings.PickUpKey.Value) ||
@@ -760,12 +758,9 @@ namespace PickIt
             var centerOfItemLabel = pickItItem.LabelOnGround.Label.GetClientRectCache.Center;
             var rectangleOfGameWindow = GameController.Window.GetWindowRectangleTimeCache;
 
-            var oldMousePosition = Mouse.GetCursorPositionVector();
             _clickWindowOffset = rectangleOfGameWindow.TopLeft;
             rectangleOfGameWindow.Inflate(-36, -36);
-            centerOfItemLabel.X += rectangleOfGameWindow.Left;
-            centerOfItemLabel.Y += rectangleOfGameWindow.Top;
-            if (!rectangleOfGameWindow.Intersects(new RectangleF(centerOfItemLabel.X, centerOfItemLabel.Y, 3, 3)))
+            if (!rectangleOfGameWindow.Contains(centerOfItemLabel + rectangleOfGameWindow.TopLeft))
             {
                 FullWork = true;
                 //LogMessage($"Label outside game window. Label: {centerOfItemLabel} Window: {rectangleOfGameWindow}", 5, Color.Red);
@@ -798,16 +793,16 @@ namespace PickIt
 
                 var clientRectCenter = clientRect.Center;
 
-                var vector2 = clientRectCenter + _clickWindowOffset;
+                var globalCoordinate = clientRectCenter + _clickWindowOffset;
 
-                if (!rectangleOfGameWindow.Intersects(new RectangleF(vector2.X, vector2.Y, 3, 3)))
+                if (!rectangleOfGameWindow.Contains(globalCoordinate))
                 {
                     FullWork = true;
                     //LogMessage($"x,y outside game window. Label: {centerOfItemLabel} Window: {rectangleOfGameWindow}", 5, Color.Red);
                     yield break;
                 }
 
-                Mouse.MoveCursorToPosition(vector2);
+                Mouse.MoveCursorToPosition(globalCoordinate);
                 yield return wait2ms;
 
                 if (pickItItem.IsTargeted())
