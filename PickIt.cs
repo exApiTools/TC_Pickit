@@ -100,6 +100,8 @@ namespace PickIt
         {
             while (true)
             {
+                //if chat is open, dont do anything
+                if (GameController?.Game?.IngameState?.IngameUi?.ChatPanel?.Children[3]?.IsVisible == true) continue;
                 yield return FindItemToPick();
 
                 coroutineCounter++;
