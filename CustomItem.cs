@@ -7,7 +7,6 @@ using ExileCore.PoEMemory.Components;
 using ExileCore.PoEMemory.Elements;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared.Enums;
-using Map = ExileCore.PoEMemory.Components.Map;
 
 namespace PickIt
 {
@@ -150,7 +149,7 @@ namespace PickIt
                     IsWeapon = true;
                 }
 
-                MapTier = GroundItem.HasComponent<Map>() ? GroundItem.GetComponent<Map>().Tier : 0;
+                MapTier = GroundItem.HasComponent<MapKey>() ? GroundItem.GetComponent<MapKey>().Tier : 0;
                 IsValid = true;
             }
 
