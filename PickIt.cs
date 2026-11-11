@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Hexa.NET.ImGui;
 using Newtonsoft.Json;
 using Input = ExileCore.Input;
 using nuVector2 = System.Numerics.Vector2;

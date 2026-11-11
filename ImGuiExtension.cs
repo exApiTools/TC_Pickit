@@ -5,7 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using ExileCore;
 using ExileCore.Shared.Nodes;
-using ImGuiNET;
+using Hexa.NET.ImGui;
 using SharpDX;
 using ImGuiVector2 = System.Numerics.Vector2;
 using ImGuiVector4 = System.Numerics.Vector4;
@@ -192,7 +192,7 @@ namespace Random_Features.Libs
                 byte[] currentValueBytes = Encoding.UTF8.GetBytes(currentValue);
                 Array.Copy(currentValueBytes, buff, currentValueBytes.Length);
             }
-            ImGui.InputText(label, buff, maxLength, flags);
+            ImGui.InputText(label, ref buff[0], maxLength, flags);
             return Encoding.Default.GetString(buff).TrimEnd('\0');
         }
 
@@ -237,13 +237,19 @@ namespace Random_Features.Libs
         // ImColor_HSV Maker
         public static ImGuiVector4 ImColor_HSV(float h, float s, float v)
         {
-            ImGui.ColorConvertHSVtoRGB(h, s, v, out var r, out var g, out var b);
+            float r = 0;
+            float g = 0;
+            float b = 0;
+            ImGui.ColorConvertHSVtoRGB(h, s, v, ref r, ref g, ref b);
             return new ImGuiVector4(r, g, b, 255);
         }
 
         public static ImGuiVector4 ImColor_HSV(float h, float s, float v, float a)
         {
-            ImGui.ColorConvertHSVtoRGB(h, s, v, out var r, out var g, out var b);
+            float r = 0;
+            float g = 0;
+            float b = 0;
+            ImGui.ColorConvertHSVtoRGB(h, s, v, ref r, ref g, ref b);
             return new ImGuiVector4(r, g, b, a);
         }
 
@@ -253,7 +259,7 @@ namespace Random_Features.Libs
             var newcontentRegionArea = new System.Numerics.Vector2();
             newcontentRegionArea = ImGui.GetContentRegionAvail();
             var boxRegion = new ImGuiVector2(newcontentRegionArea.X, height);
-            if (ImGui.BeginChild(idString, boxRegion, true, ImGuiWindowFlags.HorizontalScrollbar))
+            if (ImGui.BeginChild(idString, boxRegion, ImGuiChildFlags.Borders, ImGuiWindowFlags.HorizontalScrollbar))
             {
                 for (var i = 0; i < settingList.Count; i++)
                 {
@@ -296,7 +302,7 @@ namespace Random_Features.Libs
         //End Columns
         public static void EndColumn()
         {
-            ImGui.Columns(1, null, false);
+            ImGui.Columns(1, false);
         }
 
         public static void ToolTip(string desc)
